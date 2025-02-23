@@ -1,8 +1,7 @@
 "use client";
 
 import type React from "react";
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Card,
@@ -23,11 +22,42 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 
+interface Template {
+  id: string;
+  name: string;
+}
+
 export default function EmailTemplateForm() {
   const [template, setTemplate] = useState("");
   const [email, setEmail] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [companyDescription, setCompanyDescription] = useState("");
+  const [templates, setTemplates] = useState<Template[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTemplates = async () => {
+      try {
+        setIsLoading(true);
+        // Replace with your actual API endpoint
+        const response = await fetch("/api/templates");
+        if (!response.ok) {
+          throw new Error("Failed to fetch templates");
+        }
+        const data = await response.json();
+        setTemplates(data);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to load templates"
+        );
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchTemplates();
+  }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,12 +84,24 @@ export default function EmailTemplateForm() {
             <Label htmlFor="template">Select Template</Label>
             <Select value={template} onValueChange={setTemplate}>
               <SelectTrigger id="template">
-                <SelectValue placeholder="Choose a template" />
+                <SelectValue
+                  placeholder={
+                    isLoading ? "Loading templates..." : "Choose a template"
+                  }
+                />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="welcome">Welcome Email</SelectItem>
-                <SelectItem value="newsletter">Newsletter</SelectItem>
-                <SelectItem value="promotion">Promotional Offer</SelectItem>
+                {error ? (
+                  <SelectItem value="error" disabled>
+                    Error loading templates
+                  </SelectItem>
+                ) : (
+                  templates.map((t) => (
+                    <SelectItem key={t.id} value={t.id}>
+                      {t.name}
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -96,7 +138,7 @@ export default function EmailTemplateForm() {
           </div>
         </CardContent>
         <CardFooter className="mt-4">
-          <Button type="submit" className="w-full">
+          <Button type="submit" className="w-full" disabled={isLoading}>
             Send Email
           </Button>
         </CardFooter>
