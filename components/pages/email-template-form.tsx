@@ -28,7 +28,7 @@ interface Template {
 }
 
 export default function EmailTemplateForm() {
-  const [template, setTemplate] = useState("");
+  const [selectedTemplate, setSelectedTemplate] = useState("");
   const [email, setEmail] = useState("");
   const [companyName, setCompanyName] = useState("");
   const [companyDescription, setCompanyDescription] = useState("");
@@ -63,7 +63,7 @@ export default function EmailTemplateForm() {
     e.preventDefault();
     // Here you would typically send the form data to your backend
     console.log("Form submitted", {
-      template,
+      selectedTemplate,
       email,
       companyName,
       companyDescription,
@@ -82,7 +82,10 @@ export default function EmailTemplateForm() {
         <CardContent className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="template">Select Template</Label>
-            <Select value={template} onValueChange={setTemplate}>
+            <Select
+              value={selectedTemplate}
+              onValueChange={setSelectedTemplate}
+            >
               <SelectTrigger id="template">
                 <SelectValue
                   placeholder={
